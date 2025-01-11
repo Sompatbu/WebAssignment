@@ -6,9 +6,9 @@ namespace WebAssignment.Server.Entities;
 public class TransactionEntity
 {
     public int Id { get; set; }
-    [Required]
+    [Required, StringLength(50)]
     public required string TransactionId { get; set; }
-    [Required]
+    [Required, StringLength(30)]
     public required string AccountNumber { get; set; }
     [Required]
     public required decimal Amount { get; set; }
