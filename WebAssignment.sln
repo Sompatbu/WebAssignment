@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35506.116 d17.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebAssignment.Server", "WebAssignment.Server\WebAssignment.Server.csproj", "{B1E37ECF-A71A-4DC8-9C78-E6572A15B7AE}"
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "webassignment.client", "webassignment.client\webassignment.client.esproj", "{7729C617-A296-4CF4-9A9C-A84F8CB7A6FF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B1E37ECF-A71A-4DC8-9C78-E6572A15B7AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1E37ECF-A71A-4DC8-9C78-E6572A15B7AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1E37ECF-A71A-4DC8-9C78-E6572A15B7AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1E37ECF-A71A-4DC8-9C78-E6572A15B7AE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7729C617-A296-4CF4-9A9C-A84F8CB7A6FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7729C617-A296-4CF4-9A9C-A84F8CB7A6FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7729C617-A296-4CF4-9A9C-A84F8CB7A6FF}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{7729C617-A296-4CF4-9A9C-A84F8CB7A6FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7729C617-A296-4CF4-9A9C-A84F8CB7A6FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7729C617-A296-4CF4-9A9C-A84F8CB7A6FF}.Release|Any CPU.Deploy.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
