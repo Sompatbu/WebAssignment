@@ -50,6 +50,10 @@ export default defineConfig({
             '^/weatherforecast': {
                 target,
                 secure: false
+            },
+            '^/swagger': {
+                target,
+                secure: false
             }
         },
         port: 49321,
