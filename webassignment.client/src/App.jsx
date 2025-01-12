@@ -1,11 +1,30 @@
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 import './App.css';
 
 function App() {
     const [forecasts, setForecasts] = useState();
+    const [file, setFile] = useState(null);
+
+    const onFileChange = event => {
+        setFile(event.target.files[0]);
+    };
+
+    const onFileUpload = () => {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        axios.post("https://localhost:49321/transaction/upload", formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+            .then(response => alert('File uploaded successfully: ' + response.data))
+            .catch(error => alert('Error uploading file: ' + error));
+    };
 
     useEffect(() => {
-        populateWeatherData();
+        populateTransactionData();
     }, []);
 
     const contents = forecasts === undefined
@@ -13,19 +32,17 @@ function App() {
         : <table className="table table-striped" aria-labelledby="tableLabel">
             <thead>
                 <tr>
-                    <th>Date</th>
-                    <th>Temp. (C)</th>
-                    <th>Temp. (F)</th>
-                    <th>Summary</th>
+                    <th>ID</th>
+                    <th>Payment</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody>
                 {forecasts.map(forecast =>
-                    <tr key={forecast.date}>
-                        <td>{forecast.date}</td>
-                        <td>{forecast.temperatureC}</td>
-                        <td>{forecast.temperatureF}</td>
-                        <td>{forecast.summary}</td>
+                    <tr key={forecast.id}>
+                        <td>{forecast.id}</td>
+                        <td>{forecast.payment}</td>
+                        <td>{forecast.status}</td>
                     </tr>
                 )}
             </tbody>
@@ -33,17 +50,23 @@ function App() {
 
     return (
         <div>
-            <h1 id="tableLabel">Weather forecast</h1>
+            <h1 id="tableLabel">Transaction</h1>
+            <h1>File Uploader</h1>
+            <input type="file" onChange={onFileChange} />
+            <button onClick={onFileUpload}>
+                Upload!
+            </button>
+
             <p>This component demonstrates fetching data from the server.</p>
             {contents}
         </div>
     );
     
-    async function populateWeatherData() {
-        const response = await fetch('weatherforecast');
+    async function populateTransactionData() {
+        const response = await fetch('transaction');
         if (response.ok) {
             const data = await response.json();
-            setForecasts(data);
+            setForecasts(data.data);
         }
     }
 }

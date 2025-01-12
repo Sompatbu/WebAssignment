@@ -54,6 +54,14 @@ export default defineConfig({
             '^/swagger': {
                 target,
                 secure: false
+            },
+            '^/transaction': {
+                target,
+                secure: false
+            },
+            '^/transaction/upload': {
+                target,
+                secure: false
             }
         },
         port: 49321,
