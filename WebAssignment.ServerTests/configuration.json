@@ -1,0 +1,5 @@
+{
+  "ConnectionStrings": {
+    "TransactionContext": "Host=localhost;Port=5432;Database=assignment;Username=postgres;Password=p@ssword"
+  }
+}
