@@ -24,11 +24,19 @@ public class TransactionRepository(TransactionContext context)
         if (!string.IsNullOrEmpty(filter.CurrencyCode))
             predicate = predicate.And(entity => entity.CurrencyCode == filter.CurrencyCode);
 
-        if (filter.From is not null)
-            predicate = predicate.And(entity => entity.TransactionDate >= filter.From);
+        if (filter.From.HasValue)
+        {
+            var fromDateTime = filter.From.Value.ToDateTime(new TimeOnly(), DateTimeKind.Utc);
+            var fromDateTimeOffset = new DateTimeOffset(fromDateTime);
+            predicate = predicate.And(entity => entity.TransactionDate >= fromDateTimeOffset);
+        }
 
-        if (filter.To is not null)
-            predicate = predicate.And(entity => entity.TransactionDate >= filter.To);
+        if (filter.To.HasValue)
+        {
+            var toDateTime = filter.To.Value.ToDateTime(new TimeOnly(), DateTimeKind.Utc);
+            var toDateTimeOffset = new DateTimeOffset(toDateTime);
+            predicate = predicate.And(entity => entity.TransactionDate < toDateTimeOffset);
+        }
 
         if (filter.Status is not null)
             predicate = predicate.And(entity => entity.Status == filter.Status);

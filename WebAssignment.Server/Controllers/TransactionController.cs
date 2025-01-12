@@ -120,8 +120,8 @@ public class TransactionController(TransactionService transactionService) : Cont
     [ProducesResponseType<BaseResponse<TransactionResponseData>>(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetTransactionsAsync(
         [FromQuery] string? currencyCode, 
-        [FromQuery] DateTimeOffset? from,
-        [FromQuery] DateTimeOffset? to,
+        [FromQuery] DateOnly? from,
+        [FromQuery] DateOnly? to,
         [FromQuery] TransactionStatus? status)
     {
         var filter = new TransactionFilterRequest()
