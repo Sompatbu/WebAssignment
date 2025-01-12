@@ -1,9 +1,11 @@
+using ExtendedXmlSerializer.ExtensionModel;
 using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using WebAssignment.Server.Context;
 using WebAssignment.Server.Enums;
 using WebAssignment.Server.Repositories;
+using WebAssignment.Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +25,7 @@ var dataSource = dataSourceBuilder.Build();
 
 _ = builder.Services.AddDbContextPool<TransactionContext>(options => _ = options.UseNpgsql(dataSource, options => options.EnableRetryOnFailure()));
 _ = builder.Services.AddScoped<AssignmentRepositories>();
+_ = builder.Services.AddScoped<TransactionService>();
 
 var app = builder.Build();
 

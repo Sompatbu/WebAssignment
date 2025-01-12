@@ -10,6 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CsvHelper" Version="33.0.1" />
+    <PackageReference Include="ExtendedXmlSerializer" Version="3.8.0" />
     <PackageReference Include="linq2db.EntityFrameworkCore" Version="9.0.0" />
     <PackageReference Include="LinqKit.Microsoft.EntityFrameworkCore" Version="9.0.7" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.3.0" />
@@ -31,10 +33,6 @@
     <ProjectReference Include="..\webassignment.client\webassignment.client.esproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Repositories\" />
   </ItemGroup>
 
 </Project>

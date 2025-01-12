@@ -1,54 +1,142 @@
+using CsvHelper;
+using CsvHelper.Configuration;
 using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
 using System.Net;
+using System.Net.Mime;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Xml.Linq;
+using WebAssignment.Server.Enums;
+using WebAssignment.Server.Extension;
+using WebAssignment.Server.Models.DTOs;
+using WebAssignment.Server.Models.Request;
+using WebAssignment.Server.Models.Response;
+using WebAssignment.Server.Services;
 
-namespace WebAssignment.Server.Controllers
+namespace WebAssignment.Server.Controllers;
+
+[ApiController]
+[Route("[controller]")]
+public class TransactionController(TransactionService transactionService) : ControllerBase
 {
-    [ApiController]
-    [Route("[controller]")]
-    public class TransactionController : ControllerBase
+    [HttpPost("Upload")]
+    [Produces(MediaTypeNames.Application.Json)]
+    [ProducesResponseType<BaseResponse<bool>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<BaseResponse<TransactionDto>>(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> UploadTransactionFileAsync(IFormFile file)
     {
-        private static readonly string[] Summaries = new[]
+        if (file == null || file.Length == 0)
         {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+            return BadRequest("No file uploaded.");
+        }
+
+        try
+        {
+            List<TransactionDto> transactionDtos = [];
+
+            if (file.FileName.EndsWith(".xml"))
+            {
+                using var stream = new StreamReader(file.OpenReadStream());
+                var document = XDocument.Load(stream);
+                var transactions = document.Descendants("Transaction");
+
+                int recordIndex = 1;
+                foreach (var transaction in transactions)
+                {
+                    var dto = new TransactionDto
+                    {
+                        TransactionId = transaction.Attribute("id")?.Value,
+                        TransactionDate = DateTimeOffset.TryParseExact(transaction.Element("TransactionDate")?.Value, "yyyy-MM-ddThh:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset dateValue) ? dateValue : null,
+                        AccountNumber = transaction.Element("PaymentDetails")?.Element("AccountNo")?.Value,
+                        Amount = decimal.TryParse(transaction.Element("PaymentDetails")?.Element("Amount")?.Value, out decimal amountValue) ? amountValue : null,
+                        CurrencyCode = transaction.Element("PaymentDetails")?.Element("CurrencyCode")?.Value,
+                        Status = transaction.Element("Status")?.Value switch
+                        {
+                            "Approved" => TransactionStatus.Approved,
+                            "Rejected" => TransactionStatus.Rejected,
+                            "Done" => TransactionStatus.Done,
+                            _ => null,
+                        },
+                    };
+
+                    var errors = dto.ValidateData(recordIndex);
+                    dto.Error = errors.Count > 0 ? [.. errors] : null;
+                    recordIndex++;
+                    transactionDtos.Add(dto);
+                }
+            }
+            else if (file.FileName.EndsWith(".csv"))
+            {
+                using var stream = new StreamReader(file.OpenReadStream());
+                using var csv = new CsvReader(stream, new CsvConfiguration(CultureInfo.InvariantCulture) { HasHeaderRecord = true });
+
+                await csv.ReadAsync();
+                csv.ReadHeader();
+                int recordIndex = 1;
+                while (await csv.ReadAsync())
+                {
+                    var dto = new TransactionDto
+                    {
+                        TransactionId = csv.GetField(0),
+                        AccountNumber = csv.GetField(1),
+                        Amount = decimal.TryParse(csv.GetField(2)?.Replace(",", string.Empty), out decimal amount) ? amount : 0,
+                        CurrencyCode = csv.GetField(3),
+                        TransactionDate = DateTimeOffset.TryParseExact(csv.GetField(4), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset transactionDate) ? transactionDate : default,
+                        Status = csv.GetField(5) switch
+                        {
+                            "Approved" => TransactionStatus.Approved,
+                            "Failed" => TransactionStatus.Rejected,
+                            "Finished" => TransactionStatus.Done,
+                            _ => null,
+                        },
+                    };
+
+                    var errors = dto.ValidateData(recordIndex);
+                    dto.Error = errors.Count > 0 ? [.. errors] : null;
+                    recordIndex++;
+                    transactionDtos.Add(dto);
+                }
+            }
+            else
+            {
+                return BadRequest("Unknown format.");
+            }
+
+            if (transactionDtos.Any(item => item.Error is not null))
+            {
+                return BadRequest(new BaseResponse<TransactionDto>(transactionDtos.Where(item => item.Error is not null).SelectMany(item => item.Error!).ToArray()));
+            }
+
+            var response = await transactionService.InsertTransactionsAsync(transactionDtos);
+            return response ? Ok() : StatusCode(500, "Internal server error");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Internal server error: {ex.Message}");
+        }
+    }
+
+    [HttpGet()]
+    [Produces(MediaTypeNames.Application.Json)]
+    [ProducesResponseType<BaseResponse<bool>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<BaseResponse<TransactionDto>>(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetTransactionsAsync(
+        [FromQuery] string? currencyCode, 
+        [FromQuery] DateTimeOffset? from,
+        [FromQuery] DateTimeOffset? to,
+        [FromQuery] TransactionStatus? status)
+    {
+        var filter = new TransactionFilterRequest()
+        {
+            CurrencyCode = currencyCode,
+            From = from,
+            To = to,
+            Status = status
         };
 
-        private readonly ILogger<TransactionController> _logger;
+        var response = await transactionService.FindTransactionsAsync(filter);
 
-        public TransactionController(ILogger<TransactionController> logger)
-        {
-            _logger = logger;
-        }
-
-        [HttpPost("Upload")]
-        public async Task<IActionResult> UploadTransactionFileAsync()
-        {
-            //if (!Request.Content.IsMimeMultipartContent())
-            //    throw new HttpResponseException(HttpStatusCode.UnsupportedMediaType);
-
-            //var provider = new MultipartMemoryStreamProvider();
-            //await Request.Content.ReadAsMultipartAsync(provider);
-            //foreach (var file in provider.Contents)
-            //{
-            //    var filename = file.Headers.ContentDisposition.FileName.Trim('\"');
-            //    var buffer = await file.ReadAsByteArrayAsync();
-            //    //Do whatever you want with filename and its binary data.
-            //}
-
-            return Ok();
-        }
-
-        [HttpGet("GetWeatherForecast")]
-        public IEnumerable<WeatherForecast> Get()
-        {
-            //var something = XElement.Load();
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-            {
-                Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-            })
-            .ToArray();
-        }
+        return Ok(response);
     }
 }
