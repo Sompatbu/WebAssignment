@@ -2,7 +2,6 @@
 using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using WebAssignment.Server.Enums;
 
 #nullable disable
 
@@ -28,7 +27,7 @@ namespace WebAssignment.Server.Migrations
                     Amount = table.Column<decimal>(type: "numeric", nullable: false),
                     CurrencyCode = table.Column<string>(type: "text", nullable: false),
                     TransactionDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    Status = table.Column<TransactionStatus>(type: "transaction_status", nullable: false)
+                    Status = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -36,12 +35,12 @@ namespace WebAssignment.Server.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_transactions_TransactionDate_CurrencyCode_Status",
+                name: "IX_transactions_TransactionId_TransactionDate_CurrencyCode_Sta~",
                 table: "transactions",
-                columns: new[] { "TransactionDate", "CurrencyCode", "Status" },
+                columns: new[] { "TransactionId", "TransactionDate", "CurrencyCode", "Status" },
                 unique: true,
-                descending: new[] { true, false, false })
-                .Annotation("Npgsql:IndexInclude", new[] { "TransactionId", "AccountNumber", "Amount" })
+                descending: new[] { false, true, false, false })
+                .Annotation("Npgsql:IndexInclude", new[] { "AccountNumber", "Amount" })
                 .Annotation("Npgsql:NullsDistinct", false);
         }
 

@@ -2,7 +2,7 @@
 
 public class TransactionResponseData
 {
-    public required string TransactionId { get; set; }
+    public required string Id { get; set; }
     public required string Payment { get; set; }
     public required string Status { get; set; }
 }

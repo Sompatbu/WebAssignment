@@ -56,12 +56,12 @@ namespace WebAssignment.Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TransactionDate", "CurrencyCode", "Status")
+                    b.HasIndex("TransactionId", "TransactionDate", "CurrencyCode", "Status")
                         .IsUnique()
-                        .IsDescending(true, false, false);
+                        .IsDescending(false, true, false, false);
 
-                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("TransactionDate", "CurrencyCode", "Status"), new[] { "TransactionId", "AccountNumber", "Amount" });
-                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("TransactionDate", "CurrencyCode", "Status"), false);
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("TransactionId", "TransactionDate", "CurrencyCode", "Status"), new[] { "AccountNumber", "Amount" });
+                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("TransactionId", "TransactionDate", "CurrencyCode", "Status"), false);
 
                     b.ToTable("transactions", (string)null);
                 });

@@ -2,10 +2,7 @@ using CsvHelper;
 using CsvHelper.Configuration;
 using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
-using System.Net;
 using System.Net.Mime;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
 using System.Xml.Linq;
 using WebAssignment.Server.Enums;
 using WebAssignment.Server.Extension;
@@ -17,10 +14,10 @@ using WebAssignment.Server.Services;
 namespace WebAssignment.Server.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("transaction")]
 public class TransactionController(TransactionService transactionService) : ControllerBase
 {
-    [HttpPost("Upload")]
+    [HttpPost("upload")]
     [Produces(MediaTypeNames.Application.Json)]
     [ProducesResponseType<BaseResponse<bool>>(StatusCodes.Status200OK)]
     [ProducesResponseType<BaseResponse<TransactionDto>>(StatusCodes.Status400BadRequest)]
@@ -47,7 +44,7 @@ public class TransactionController(TransactionService transactionService) : Cont
                     var dto = new TransactionDto
                     {
                         TransactionId = transaction.Attribute("id")?.Value,
-                        TransactionDate = DateTimeOffset.TryParseExact(transaction.Element("TransactionDate")?.Value, "yyyy-MM-ddThh:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset dateValue) ? dateValue : null,
+                        TransactionDate = DateTimeOffset.TryParseExact(transaction.Element("TransactionDate")?.Value, "yyyy-MM-ddThh:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset dateValue) ? dateValue : null,
                         AccountNumber = transaction.Element("PaymentDetails")?.Element("AccountNo")?.Value,
                         Amount = decimal.TryParse(transaction.Element("PaymentDetails")?.Element("Amount")?.Value, out decimal amountValue) ? amountValue : null,
                         CurrencyCode = transaction.Element("PaymentDetails")?.Element("CurrencyCode")?.Value,
@@ -82,7 +79,7 @@ public class TransactionController(TransactionService transactionService) : Cont
                         AccountNumber = csv.GetField(1),
                         Amount = decimal.TryParse(csv.GetField(2)?.Replace(",", string.Empty), out decimal amount) ? amount : 0,
                         CurrencyCode = csv.GetField(3),
-                        TransactionDate = DateTimeOffset.TryParseExact(csv.GetField(4), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset transactionDate) ? transactionDate : default,
+                        TransactionDate = DateTimeOffset.TryParseExact(csv.GetField(4), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset transactionDate) ? transactionDate : default,
                         Status = csv.GetField(5) switch
                         {
                             "Approved" => TransactionStatus.Approved,
@@ -109,7 +106,7 @@ public class TransactionController(TransactionService transactionService) : Cont
             }
 
             var response = await transactionService.InsertTransactionsAsync(transactionDtos);
-            return response ? Ok() : StatusCode(500, "Internal server error");
+            return response ? Ok(new BaseResponse<bool>(true)) : StatusCode(500, "Internal server error");
         }
         catch (Exception ex)
         {
@@ -119,8 +116,8 @@ public class TransactionController(TransactionService transactionService) : Cont
 
     [HttpGet()]
     [Produces(MediaTypeNames.Application.Json)]
-    [ProducesResponseType<BaseResponse<bool>>(StatusCodes.Status200OK)]
-    [ProducesResponseType<BaseResponse<TransactionDto>>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<BaseResponse<TransactionResponseData>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<BaseResponse<TransactionResponseData>>(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetTransactionsAsync(
         [FromQuery] string? currencyCode, 
         [FromQuery] DateTimeOffset? from,

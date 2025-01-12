@@ -23,9 +23,9 @@ public static class TransactionExtensions
     {
         return new()
         {
-            TransactionId = source.TransactionId,
+            Id = source.TransactionId,
             Payment = $"{source.Amount} {source.CurrencyCode}",
-            Status = nameof(source.Status)[..1],
+            Status = $"{Enum.GetName(source.Status)![..1]}",
         };
     }
 

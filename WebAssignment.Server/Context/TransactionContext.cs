@@ -15,16 +15,16 @@ public class TransactionContext(DbContextOptions<TransactionContext> options) : 
             .ToTable("transactions")
             .HasIndex(e => new
             {
+                e.TransactionId,
                 e.TransactionDate,
                 e.CurrencyCode,
                 e.Status,
             })
-            .IsDescending(true, false, false)
+            .IsDescending(false, true, false, false)
             .IsUnique()
             .AreNullsDistinct(false)
             .IncludeProperties(e => new
             {
-                e.TransactionId,
                 e.AccountNumber,
                 e.Amount,
             });

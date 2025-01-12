@@ -33,6 +33,10 @@ public class TransactionRepository(TransactionContext context)
         if (filter.Status is not null)
             predicate = predicate.And(entity => entity.Status == filter.Status);
 
-        return await context.Transactions.AsNoTracking().Where(predicate).Select(item => item.ToTransactionResponseData()).ToArrayAsync(cancellationToken);
+        return await context.Transactions.AsNoTracking()
+            .Where(predicate)
+            .OrderByDescending(item => item.TransactionDate)
+            .Select(item => item.ToTransactionResponseData())
+            .ToArrayAsync(cancellationToken);
     }
 }
