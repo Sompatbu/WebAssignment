@@ -47,10 +47,6 @@ export default defineConfig({
     },
     server: {
         proxy: {
-            '^/weatherforecast': {
-                target,
-                secure: false
-            },
             '^/swagger': {
                 target,
                 secure: false

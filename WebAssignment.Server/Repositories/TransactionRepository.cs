@@ -19,22 +19,22 @@ public class TransactionRepository(TransactionContext context)
 
     public async Task<TransactionResponseData[]> FindTransactions(TransactionFilterRequest filter, CancellationToken cancellationToken = default)
     {
-        var predicate = PredicateBuilder.New<TransactionEntity>(true);
+        ExpressionStarter<TransactionEntity> predicate = PredicateBuilder.New<TransactionEntity>(true);
 
         if (!string.IsNullOrEmpty(filter.CurrencyCode))
             predicate = predicate.And(entity => entity.CurrencyCode == filter.CurrencyCode);
 
         if (filter.From.HasValue)
         {
-            var fromDateTime = filter.From.Value.ToDateTime(new TimeOnly(), DateTimeKind.Utc);
-            var fromDateTimeOffset = new DateTimeOffset(fromDateTime);
+            DateTime fromDateTime = filter.From.Value.ToDateTime(new TimeOnly(), DateTimeKind.Utc);
+            DateTimeOffset fromDateTimeOffset = new(fromDateTime);
             predicate = predicate.And(entity => entity.TransactionDate >= fromDateTimeOffset);
         }
 
         if (filter.To.HasValue)
         {
-            var toDateTime = filter.To.Value.ToDateTime(new TimeOnly(), DateTimeKind.Utc);
-            var toDateTimeOffset = new DateTimeOffset(toDateTime);
+            DateTime toDateTime = filter.To.Value.ToDateTime(new TimeOnly(), DateTimeKind.Utc);
+            DateTimeOffset toDateTimeOffset = new(toDateTime);
             predicate = predicate.And(entity => entity.TransactionDate < toDateTimeOffset);
         }
 

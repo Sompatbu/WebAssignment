@@ -1,4 +1,3 @@
-using ExtendedXmlSerializer.ExtensionModel;
 using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -7,7 +6,7 @@ using WebAssignment.Server.Enums;
 using WebAssignment.Server.Repositories;
 using WebAssignment.Server.Services;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
@@ -21,13 +20,13 @@ NpgsqlDataSourceBuilder dataSourceBuilder = new(builder.Configuration.GetConnect
 
 _ = dataSourceBuilder.MapEnum<TransactionStatus>();
 
-var dataSource = dataSourceBuilder.Build();
+NpgsqlDataSource dataSource = dataSourceBuilder.Build();
 
 _ = builder.Services.AddDbContextPool<TransactionContext>(options => _ = options.UseNpgsql(dataSource, options => options.EnableRetryOnFailure()));
 _ = builder.Services.AddScoped<AssignmentRepositories>();
 _ = builder.Services.AddScoped<TransactionService>();
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 app.UseDefaultFiles();
 app.MapStaticAssets();
@@ -35,8 +34,8 @@ app.MapStaticAssets();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    _ = app.UseSwagger();
+    _ = app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();

@@ -34,14 +34,14 @@ public class TransactionController(TransactionService transactionService) : Cont
 
             if (file.FileName.EndsWith(".xml"))
             {
-                using var stream = new StreamReader(file.OpenReadStream());
-                var document = XDocument.Load(stream);
-                var transactions = document.Descendants("Transaction");
+                using StreamReader stream = new(file.OpenReadStream());
+                XDocument document = XDocument.Load(stream);
+                IEnumerable<XElement> transactions = document.Descendants("Transaction");
 
                 int recordIndex = 1;
-                foreach (var transaction in transactions)
+                foreach (XElement transaction in transactions)
                 {
-                    var dto = new TransactionDto
+                    TransactionDto dto = new()
                     {
                         TransactionId = transaction.Attribute("id")?.Value,
                         TransactionDate = DateTimeOffset.TryParseExact(transaction.Element("TransactionDate")?.Value, "yyyy-MM-ddThh:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset dateValue) ? dateValue : null,
@@ -57,7 +57,7 @@ public class TransactionController(TransactionService transactionService) : Cont
                         },
                     };
 
-                    var errors = dto.ValidateData(recordIndex);
+                    List<ErrorResponseData> errors = dto.ValidateData(recordIndex);
                     dto.Error = errors.Count > 0 ? [.. errors] : null;
                     recordIndex++;
                     transactionDtos.Add(dto);
@@ -65,15 +65,15 @@ public class TransactionController(TransactionService transactionService) : Cont
             }
             else if (file.FileName.EndsWith(".csv"))
             {
-                using var stream = new StreamReader(file.OpenReadStream());
-                using var csv = new CsvReader(stream, new CsvConfiguration(CultureInfo.InvariantCulture) { HasHeaderRecord = true });
+                using StreamReader stream = new(file.OpenReadStream());
+                using CsvReader csv = new(stream, new CsvConfiguration(CultureInfo.InvariantCulture) { HasHeaderRecord = true });
 
-                await csv.ReadAsync();
-                csv.ReadHeader();
+                _ = await csv.ReadAsync();
+                _ = csv.ReadHeader();
                 int recordIndex = 1;
                 while (await csv.ReadAsync())
                 {
-                    var dto = new TransactionDto
+                    TransactionDto dto = new()
                     {
                         TransactionId = csv.GetField(0),
                         AccountNumber = csv.GetField(1),
@@ -89,7 +89,7 @@ public class TransactionController(TransactionService transactionService) : Cont
                         },
                     };
 
-                    var errors = dto.ValidateData(recordIndex);
+                    List<ErrorResponseData> errors = dto.ValidateData(recordIndex);
                     dto.Error = errors.Count > 0 ? [.. errors] : null;
                     recordIndex++;
                     transactionDtos.Add(dto);
@@ -105,7 +105,7 @@ public class TransactionController(TransactionService transactionService) : Cont
                 return BadRequest(new BaseResponse<TransactionDto>(transactionDtos.Where(item => item.Error is not null).SelectMany(item => item.Error!).ToArray()));
             }
 
-            var response = await transactionService.InsertTransactionsAsync(transactionDtos);
+            bool response = await transactionService.InsertTransactionsAsync(transactionDtos);
             return response ? Ok(new BaseResponse<bool>(true)) : StatusCode(500, "Internal server error");
         }
         catch (Exception ex)
@@ -119,12 +119,12 @@ public class TransactionController(TransactionService transactionService) : Cont
     [ProducesResponseType<BaseResponse<TransactionResponseData>>(StatusCodes.Status200OK)]
     [ProducesResponseType<BaseResponse<TransactionResponseData>>(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetTransactionsAsync(
-        [FromQuery] string? currencyCode, 
+        [FromQuery] string? currencyCode,
         [FromQuery] DateOnly? from,
         [FromQuery] DateOnly? to,
         [FromQuery] TransactionStatus? status)
     {
-        var filter = new TransactionFilterRequest()
+        TransactionFilterRequest filter = new()
         {
             CurrencyCode = currencyCode,
             From = from,
@@ -132,7 +132,7 @@ public class TransactionController(TransactionService transactionService) : Cont
             Status = status
         };
 
-        var response = await transactionService.FindTransactionsAsync(filter);
+        BaseResponse<TransactionResponseData[]> response = await transactionService.FindTransactionsAsync(filter);
 
         return Ok(response);
     }

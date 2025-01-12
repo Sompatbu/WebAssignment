@@ -14,7 +14,7 @@ internal static class TestServicesFactory
 
     private static ServiceProvider InitializeServiceProvider()
     {
-        var configuration = new ConfigurationBuilder().AddJsonFile("configuration.json").Build();
+        IConfigurationRoot configuration = new ConfigurationBuilder().AddJsonFile("configuration.json").Build();
         ServiceCollection services = new();
         LinqToDBForEFTools.Initialize();
 
@@ -22,7 +22,7 @@ internal static class TestServicesFactory
 
         _ = dataSourceBuilder.MapEnum<TransactionStatus>();
 
-        var dataSource = dataSourceBuilder.Build();
+        NpgsqlDataSource dataSource = dataSourceBuilder.Build();
 
         _ = services.AddDbContextPool<TransactionContext>(options => _ = options.UseNpgsql(dataSource, options => options.EnableRetryOnFailure()));
         _ = services.AddScoped<AssignmentRepositories>();

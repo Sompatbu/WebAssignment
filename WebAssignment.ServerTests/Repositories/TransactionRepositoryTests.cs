@@ -1,10 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using WebAssignment.Server.Entities;
+﻿using WebAssignment.Server.Entities;
 using WebAssignment.Server.Enums;
 
 namespace WebAssignment.ServerTests.Repositories;
@@ -15,7 +9,7 @@ public class TransactionRepositoryTests
     [TestMethod()]
     public async Task AddRangeAsyncTest()
     {
-        var repositories = TestServicesFactory.GetAssignmentRepositories();
+        Server.Repositories.AssignmentRepositories repositories = TestServicesFactory.GetAssignmentRepositories();
         TransactionEntity[] transactions = [
             new() {
                 TransactionId = "Test-Transaction-1",
@@ -27,7 +21,7 @@ public class TransactionRepositoryTests
             }
             ];
 
-        var result = await repositories.Transaction.AddRangeAsync(transactions);
+        int result = await repositories.Transaction.AddRangeAsync(transactions);
 
         Assert.IsTrue(result > 0);
         Assert.IsTrue(transactions[0].Id > 0);
@@ -36,7 +30,7 @@ public class TransactionRepositoryTests
     [TestMethod()]
     public async Task FindTransactionsAsyncTest()
     {
-        var repositories = TestServicesFactory.GetAssignmentRepositories();
+        Server.Repositories.AssignmentRepositories repositories = TestServicesFactory.GetAssignmentRepositories();
         TransactionEntity[] transactions = [
             new() {
                 TransactionId = "Test-Find-Transaction",
@@ -48,12 +42,12 @@ public class TransactionRepositoryTests
             }
             ];
 
-        var result = await repositories.Transaction.AddRangeAsync(transactions);
+        int result = await repositories.Transaction.AddRangeAsync(transactions);
 
         Assert.IsTrue(result > 0);
         Assert.IsTrue(transactions[0].Id > 0);
 
-        var findResult = await repositories.Transaction.FindTransactions(new());
+        Server.Models.Response.TransactionResponseData[] findResult = await repositories.Transaction.FindTransactions(new());
         Assert.IsNotNull(findResult);
         Assert.IsTrue(findResult.Length > 1);
         Assert.AreEqual(transactions[0].TransactionId, findResult[0].Id);
